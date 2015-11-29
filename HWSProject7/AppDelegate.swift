@@ -12,6 +12,10 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDelegate {
 
     var window: UIWindow?
+    
+    private struct Storyboard {
+        static let NavControllerID = "NavController"
+    }
 
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
@@ -20,6 +24,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         let navigationController = splitViewController.viewControllers[splitViewController.viewControllers.count-1] as! UINavigationController
         navigationController.topViewController.navigationItem.leftBarButtonItem = splitViewController.displayModeButtonItem()
         splitViewController.delegate = self
+        
+        let tabBarController = splitViewController.viewControllers[0] as! UITabBarController
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let vc = storyboard.instantiateViewControllerWithIdentifier(Storyboard.NavControllerID) as! UINavigationController
+        vc.tabBarItem = UITabBarItem(tabBarSystemItem: .TopRated, tag: 1)
+        
+        tabBarController.viewControllers?.append(vc)
+        
         return true
     }
 
