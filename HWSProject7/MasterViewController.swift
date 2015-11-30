@@ -50,24 +50,26 @@ class MasterViewController: UITableViewController {
 
     private func fetchJSON(JSONurl: String?) {
         if JSONurl != nil {
-            if let url = NSURL(string: JSONurl!) {
-                if let data = NSData(contentsOfURL: url) {
-                    var parseError: NSError?
-                    if let parsedObject = NSJSONSerialization.JSONObjectWithData(data,
-                        options: nil,
-                        error: &parseError) as? NSDictionary {
-                        if let metadata = parsedObject[Constants.Metadata] as? NSDictionary {
-                            if let responseInfo = metadata[Constants.ResponseInfo] as? NSDictionary {
-                                if let status = responseInfo[Constants.Status] as? NSInteger {
-                                    if status == Constants.OKStatus {
-                                        parseJSON(parsedObject)
+            dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0)) { [unowned self] in
+                if let url = NSURL(string: JSONurl!) {
+                    if let data = NSData(contentsOfURL: url) {
+                        var parseError: NSError?
+                        if let parsedObject = NSJSONSerialization.JSONObjectWithData(data,
+                            options: nil,
+                            error: &parseError) as? NSDictionary {
+                                if let metadata = parsedObject[Constants.Metadata] as? NSDictionary {
+                                    if let responseInfo = metadata[Constants.ResponseInfo] as? NSDictionary {
+                                        if let status = responseInfo[Constants.Status] as? NSInteger {
+                                            if status == Constants.OKStatus {
+                                                self.parseJSON(parsedObject)
+                                            }
+                                        }
                                     }
                                 }
-                            }
                         }
+                    }else {
+                        self.showError()
                     }
-                }else {
-                    showError()
                 }
             }
         }
@@ -97,13 +99,17 @@ class MasterViewController: UITableViewController {
                 objects.append(obj)
             }
         }
-        tableView.reloadData()
+        dispatch_async(dispatch_get_main_queue()) { [unowned self] in
+            self.tableView.reloadData()
+        }
     }
     
     private func showError() {
-        let ac = UIAlertController(title: "Loading error", message: "There was a problem loading the feed", preferredStyle: .Alert)
-        ac.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
-        presentViewController(ac, animated: true, completion: nil)
+        dispatch_async(dispatch_get_main_queue()){ [unowned self] in
+            let ac = UIAlertController(title: "Loading error", message: "There was a problem loading the feed",     preferredStyle: .Alert)
+            ac.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
+            self.presentViewController(ac, animated: true, completion: nil)
+        }
     }
     
     override func didReceiveMemoryWarning() {
